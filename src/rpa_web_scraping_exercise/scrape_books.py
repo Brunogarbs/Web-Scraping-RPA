@@ -24,31 +24,7 @@ class BookData(TypedDict):
     in_stock: bool
 
 
-def scrape_books(page: Page, category: str | None, max_books: int) -> list[BookData]:
-    """ Coleta livros """
-    if max_books <= 0:
-        return []
-
-    page.goto(URL)
-
-    if category is not None:
-        category_url = _find_category_url(page, category)
-        if category_url is None:
-            return []
-        page.goto(category_url)
-
-    books: list[BookData] = []
-    while True:
-        for article in page.locator("article.product_pod").all():
-            books.append(_parse_book(article, page.url))
-            if len(books) >= max_books:
-                return books
-
-        next_url = _next_page_url(page)
-        if next_url is None:
-            return books
-        page.goto(next_url)
-
+""" FUNÇÕES AUXILIARES """
 
 def _find_category_url(page: Page, category: str) -> str | None:
     """ Procura a categoria """
@@ -97,4 +73,32 @@ def _required_attribute(locator: Locator, name: str) -> str:
     value = locator.get_attribute(name)
     if value is None:
         raise ValueError(f"Missing attribute {name!r}")
-    return value
+    return value    
+
+""" RESOLUÇÃO """
+
+def scrape_books(page: Page, category: str | None, max_books: int) -> list[BookData]:
+    """ Coleta livros """
+    if max_books <= 0:
+        return []
+
+    page.goto(URL)
+
+    if category is not None:
+        category_url = _find_category_url(page, category)
+        if category_url is None:
+            return []
+        page.goto(category_url)
+
+    books: list[BookData] = []
+    while True:
+        for article in page.locator("article.product_pod").all():
+            books.append(_parse_book(article, page.url))
+            if len(books) >= max_books:
+                return books
+
+        next_url = _next_page_url(page)
+        if next_url is None:
+            return books
+        page.goto(next_url)
+
